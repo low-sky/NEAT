@@ -110,7 +110,7 @@ implicit none
         print "(1X,A17,F4.2,A4,F4.2)","Ha/Hb => c(Hb) = ",c1
         print "(1X,A17,F4.2,A4,F4.2)","Hg/Hb => c(Hb) = ",c2
         print "(1X,A17,F4.2,A4,F4.2)","Hd/Hb => c(Hb) = ",c3
-
+	if (ISNAN(meanextinction)) meanextinction = 0.0
         PRINT "(1X,A13,F4.2,A4,F4.2)", "Mean c(Hb) = ",meanextinction
         if (runonce == 0 .and. meanextinction > 0) write(UNIT=888, FMT=*)meanextinction
 
@@ -141,6 +141,11 @@ implicit none
                 CALL deredden_SMC(H_BS, 4, meanextinction)
                 call deredden_SMC(He_lines, 4, meanextinction) 
                 CALL deredden_SMC(linelist, listlength, meanextinction)
+        elseif (switch_ext == "F") then
+                CALL deredden_Fitz(ILs, Iint, meanextinction)
+                CALL deredden_Fitz(H_BS, 4, meanextinction)
+                call deredden_Fitz(He_lines, 4, meanextinction) 
+                CALL deredden_Fitz(linelist, listlength, meanextinction)
         endif
 
         500 FORMAT (5(f10.4))
