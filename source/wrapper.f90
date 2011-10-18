@@ -74,23 +74,44 @@ program wrapper
 
         use mod_abundtypes
         use mod_resultarrays
-
+        use mod_abundIO
+        use mod_atomicdata
+        use mod_recombination_lines
+        ! use omp_lib
+               ! PRINT *, "Program Starting"
         CHARACTER*10 :: temp
         CHARACTER :: switch_ext !switch for extinction laws
-        INTEGER :: I, runs, doublext, Narg !runs = number of runs for randomiser
+        INTEGER :: I, runs, doublext, Narg, Iint !runs = number of runs for randomiser
         character*6 :: no
 
         !file reading variables
 
         TYPE(LINE),DIMENSION(:), allocatable :: linelist 
         TYPE(LINE),DIMENSION(:), allocatable :: linelist_original
+        TYPE(line), DIMENSION(62) :: ILs
+        TYPE(line), DIMENSION(62) :: ILs_para
+
         CHARACTER*80 :: filename 
         CHARACTER*1 :: null
-        INTEGER :: IO, listlength
+        INTEGER :: IO, listlength!, numthreads!, OMP_get_num_procs
         DOUBLE PRECISION :: temp1,temp2,temp3
         type(resultarray), dimension(:), allocatable :: all_results
         type(resultarray), dimension(1) :: iteration_result
 
+
+        !atomic data variables
+        TYPE(atomic_data), DIMENSION(18) :: atomic_data_list
+        TYPE(oiiRL), DIMENSION(415) :: oiiRLs
+        TYPE(niiRL), DIMENSION(99) :: niiRLs
+        TYPE(ciiRL), DIMENSION(57) :: ciiRLs
+        TYPE(neiiRL), DIMENSION(38) :: neiiRLs
+        TYPE(xiiiRL), DIMENSION(6) :: xiiiRLs
+        TYPE(oiiRL), DIMENSION(415) :: oiiRLs_para
+        TYPE(niiRL), DIMENSION(99) :: niiRLs_para
+        TYPE(ciiRL), DIMENSION(57) :: ciiRLs_para
+        TYPE(neiiRL), DIMENSION(38) :: neiiRLs_para
+        TYPE(xiiiRL), DIMENSION(6) :: xiiiRLs_para
+                PRINT *, "All Variables Declared"
         !read command line arguments
 
         Narg = IARGC() !count input arguments
@@ -122,10 +143,15 @@ program wrapper
                switch_ext = "S"
         endif
 
+        !numthreads = OMP_get_num_procs()
+        !call OMP_set_num_threads(numthreads)
+
         !first, read in the line list 
 
         print *,"Initialising"
         print *,"------------"
+
+        CALL read_ilines(ILs, Iint)
 
         I = 1
         OPEN(199, file=filename, iostat=IO, status='old')
@@ -158,10 +184,13 @@ program wrapper
 
         linelist_original = linelist
 
+        !read in atomic data sets
+        call get_atomicdata(atomic_data_list,18,oiiRLs,niiRLs,ciiRLs,neiiRLs,xiiiRLs)
+
         !now check number of iterations.  If 1, line list is fine as is.  If more than one, randomize the fluxes
 
         if(runs == 1)then !calculates abundances without uncertainties
-                call abundances(linelist, 1, switch_ext, listlength, filename, iteration_result)
+                call abundances(linelist, 1, switch_ext, listlength, filename, iteration_result, Iint, ILs, atomic_data_list)
 
         else if(runs > 1)then
 
@@ -169,7 +198,7 @@ program wrapper
                 allocate(all_results(runs))
 
                 !open/create files here for adundances
-
+                !$omp parallel do private(linelist, iteration_result, ILs_para,oiiRLs_para,niiRLs_para,ciiRLs_para,neiiRLs_para,xiiiRLs_para) shared(switch_ext, all_results,atomic_data_list)
                 DO I=1,runs
                         print*, "-=-=-=-=-=-=-=-"
                         print*, "iteration ", i
@@ -177,11 +206,18 @@ program wrapper
                         print*, " "
                         write (no, '(I6)') i
 
-                        call randomizer(linelist, listlength)
-                        call abundances(linelist, 0, switch_ext, listlength, filename, iteration_result)
+                        oiiRLs_para = oiiRLs
+                        niiRLs_para = niiRLs
+                        ciiRLs_para = ciiRLs
+                        neiiRLs_para = neiiRLs
+                        xiiiRLs_para = xiiiRLs
+                        ILs_para = ILs
                         linelist = linelist_original
+                        call randomizer(linelist, listlength)
+                        call abundances(linelist, 0, switch_ext, listlength, filename, iteration_result, Iint, ILs_para,atomic_data_list,oiiRLs_para,niiRLs_para,ciiRLs_para,neiiRLs_para,xiiiRLs_para)
                         all_results(i)=iteration_result(1)
                 END DO
+                !$omp end parallel do
 
                 OPEN(841, FILE=trim(filename)//"_NC_abund_CEL", STATUS='REPLACE', ACCESS='SEQUENTIAL', ACTION='WRITE')
                 OPEN(842, FILE=trim(filename)//"_C_abund_CEL", STATUS='REPLACE', ACCESS='SEQUENTIAL', ACTION='WRITE')

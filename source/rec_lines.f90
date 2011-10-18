@@ -2,6 +2,7 @@
 ! RW May 2009
 
       module mod_recombination_lines
+!      use mod_atomicdata
 
       TYPE oiiRL
             CHARACTER*1 :: Hyb
@@ -37,7 +38,7 @@
             DOUBLE PRECISION :: abundance
       END TYPE
 
-      TYPE(oiiRL), DIMENSION(415) :: oiiRLs
+!      TYPE(oiiRL), DIMENSION(415) :: oiiRLs
 
       TYPE niiRL
             CHARACTER*1 :: Hyb
@@ -71,7 +72,7 @@
             DOUBLE PRECISION :: abundance
       END TYPE
 
-      TYPE(niiRL), DIMENSION(99) :: niiRLs
+!      TYPE(niiRL), DIMENSION(99) :: niiRLs
 
       TYPE ciiRL
             DOUBLE PRECISION :: Wave
@@ -86,7 +87,7 @@
             DOUBLE PRECISION :: abundance
       END TYPE
 
-      TYPE(ciiRL), DIMENSION(57) :: ciiRLs
+!      TYPE(ciiRL), DIMENSION(57) :: ciiRLs
 
       TYPE neiiRL
             DOUBLE PRECISION :: Wave
@@ -102,7 +103,7 @@
             DOUBLE PRECISION :: abundance
       END TYPE
 
-      TYPE(neiiRL), DIMENSION(38) :: neiiRLs
+!      TYPE(neiiRL), DIMENSION(38) :: neiiRLs
 
       TYPE xiiiRL
             CHARACTER*3      :: Ion
@@ -118,7 +119,7 @@
             DOUBLE PRECISION :: abundance
       END TYPE
 
-      TYPE(xiiiRL), DIMENSION(6) :: xiiiRLs
+!      TYPE(xiiiRL), DIMENSION(6) :: xiiiRLs
 
       contains
       subroutine oii_rec_lines(te,ne,abund,oiiRLs)
@@ -218,21 +219,21 @@
 
 ! read in OII data
 
-            301 FORMAT (I5, 1X, F9.4, 1X, A1, A1, A1, A1, A1, F7.4,     &
-     & 1X, A3, 1X, F7.4, 1X, A3, 1X, A7, 3X, F11.4, A1, A1, 1X, I2, &
-     &1X, A1, 1X, A9, 1X, F13.4, 1X, A1, A1, 1X, I2, 1X, A1, 1X, A9, 1X,&
-     & F7.4, 1X, F7.4, 1X, F7.4)!, 1X, E10.4, 1X, E10.4, 1X)
-            OPEN(201, file="atomic_data06/Roii.dat", status='old')
-            DO i = 1,415
-            READ(201,301) oiiRLs(i)%ION, oiiRLs(i)%Wave, oiiRLs(i)%Hyb, &
-     &oiiRLs(i)%Rem1, oiiRLs(i)%Rem2, oiiRLs(i)%Rem3, oiiRLs(i)%Rem4,   &
-     &oiiRLs(i)%gf1, oiiRLs(i)%q_gf1, oiiRLs(i)%gf2, oiiRLs(i)%q_gf2,   &
-     &oiiRLs(i)%Mult, oiiRLs(i)%E1, oiiRLs(i)%n_E1, oiiRLs(i)%n_E1GA,   &
-     &oiiRLs(i)%g1, oiiRLs(i)%n_g1, oiiRLs(i)%Term1, oiiRLs(i)%E2,      &
-     &oiiRLs(i)%n_E2, oiiRLs(i)%n_E2GA, oiiRLs(i)%g2, oiiRLs(i)%n_g2,   &
-     &oiiRLs(i)%Term2, oiiRLs(i)%Br_A, oiiRLs(i)%Br_B, oiiRLs(i)%Br_C 
-            END DO 
-      CLOSE(201)
+!            301 FORMAT (I5, 1X, F9.4, 1X, A1, A1, A1, A1, A1, F7.4,     &
+!     & 1X, A3, 1X, F7.4, 1X, A3, 1X, A7, 3X, F11.4, A1, A1, 1X, I2, &
+!     &1X, A1, 1X, A9, 1X, F13.4, 1X, A1, A1, 1X, I2, 1X, A1, 1X, A9, 1X,&
+!     & F7.4, 1X, F7.4, 1X, F7.4)!, 1X, E10.4, 1X, E10.4, 1X)
+!            OPEN(201, file="atomic_data06/Roii.dat", status='old')
+!            DO i = 1,415
+!            READ(201,301) oiiRLs(i)%ION, oiiRLs(i)%Wave, oiiRLs(i)%Hyb, &
+!     &oiiRLs(i)%Rem1, oiiRLs(i)%Rem2, oiiRLs(i)%Rem3, oiiRLs(i)%Rem4,   &
+!     &oiiRLs(i)%gf1, oiiRLs(i)%q_gf1, oiiRLs(i)%gf2, oiiRLs(i)%q_gf2,   &
+!     &oiiRLs(i)%Mult, oiiRLs(i)%E1, oiiRLs(i)%n_E1, oiiRLs(i)%n_E1GA,   &
+!     &oiiRLs(i)%g1, oiiRLs(i)%n_g1, oiiRLs(i)%Term1, oiiRLs(i)%E2,      &
+!     &oiiRLs(i)%n_E2, oiiRLs(i)%n_E2GA, oiiRLs(i)%g2, oiiRLs(i)%n_g2,   &
+!     &oiiRLs(i)%Term2, oiiRLs(i)%Br_A, oiiRLs(i)%Br_B, oiiRLs(i)%Br_C 
+!            END DO 
+!      CLOSE(201)
 
 ! 4f-3d transitions
 
@@ -266,10 +267,13 @@
         c = -0.04843
         aeff = 1.e-14 * a * te ** (b + c * log(te))
       endif
-
+      print*,"line 270"
       do i = 1,183 
+      print*, i 
+      print*,"line 273"
         oiiRLs(i)%Em = aeff * 1.98648E-08 /oiiRLs(i)%Wave * &
         & oiiRLs(i)%g2 * oiiRLs(i)%Br_B
+        print*,"line 276"
         oiiRLs(i)%Int = 100. * oiiRLs(i)%Em / Em_hb * abund 
       enddo
 
@@ -825,21 +829,21 @@
 
 ! read in NII data
 
-            301 FORMAT (I5, 1X, F9.4, 1X, A1, A1, A1, A1, A1, 1X, F7.4, &
-     & 1X, A3, 1X, F7.4, 1X, A3, 1X, A7, 3X, F11.4, A1, A1, 1X, I2, &
-     &1X, A1, 1X, A9, 1X, F13.4, 1X, A1, A1, 1X, I2, 1X, A1, 1X, A9, 1X,&
-     & F7.4, 1X, F7.4, 1X, F7.4)!, 1X, E10.4, 1X, E10.4, 1X)
-            OPEN(201, file="atomic_data06/Rnii.dat", status='old')
-            DO i = 1,99
-            READ(201,301) niiRLs(i)%ION, niiRLs(i)%Wave, niiRLs(i)%Hyb, &
-     &niiRLs(i)%Rem1, niiRLs(i)%Rem2, niiRLs(i)%Rem3, niiRLs(i)%Rem4,   &
-     &niiRLs(i)%gf1, niiRLs(i)%q_gf1, niiRLs(i)%gf2, niiRLs(i)%q_gf2,   &
-     &niiRLs(i)%Mult, niiRLs(i)%E1, niiRLs(i)%n_E1, niiRLs(i)%n_E1GA,   &
-     &niiRLs(i)%g1, niiRLs(i)%n_g1, niiRLs(i)%Term1, niiRLs(i)%E2,      &
-     &niiRLs(i)%n_E2, niiRLs(i)%n_E2GA, niiRLs(i)%g2, niiRLs(i)%n_g2,   &
-     &niiRLs(i)%Term2, niiRLs(i)%Br_LS
-            END DO
-      CLOSE(201)
+!            301 FORMAT (I5, 1X, F9.4, 1X, A1, A1, A1, A1, A1, 1X, F7.4, &
+!     & 1X, A3, 1X, F7.4, 1X, A3, 1X, A7, 3X, F11.4, A1, A1, 1X, I2, &
+!     &1X, A1, 1X, A9, 1X, F13.4, 1X, A1, A1, 1X, I2, 1X, A1, 1X, A9, 1X,&
+!     & F7.4, 1X, F7.4, 1X, F7.4)!, 1X, E10.4, 1X, E10.4, 1X)
+!            OPEN(201, file="atomic_data06/Rnii.dat", status='old')
+!            DO i = 1,99
+!            READ(201,301) niiRLs(i)%ION, niiRLs(i)%Wave, niiRLs(i)%Hyb, &
+!     &niiRLs(i)%Rem1, niiRLs(i)%Rem2, niiRLs(i)%Rem3, niiRLs(i)%Rem4,   &
+!     &niiRLs(i)%gf1, niiRLs(i)%q_gf1, niiRLs(i)%gf2, niiRLs(i)%q_gf2,   &
+!     &niiRLs(i)%Mult, niiRLs(i)%E1, niiRLs(i)%n_E1, niiRLs(i)%n_E1GA,   &
+!     &niiRLs(i)%g1, niiRLs(i)%n_g1, niiRLs(i)%Term1, niiRLs(i)%E2,      &
+!     &niiRLs(i)%n_E2, niiRLs(i)%n_E2GA, niiRLs(i)%g2, niiRLs(i)%n_g2,   &
+!     &niiRLs(i)%Term2, niiRLs(i)%Br_LS
+!            END DO
+!      CLOSE(201)
 
       te = te/10000
 
@@ -1283,13 +1287,13 @@
 
 ! read in NII data
 
-       301 FORMAT (F7.2, 1X, F6.4, 1X, F7.4, 1X, F7.4, 1X, F7.4, 1X, F7.4) 
-       OPEN(201, file="atomic_data06/Rcii.dat", status='old')
-       DO i = 1,57
-         READ(201,301) ciiRLs(i)%Wave, ciiRLs(i)%a, ciiRLs(i)%b, &
-         & ciiRLs(i)%c, ciiRLs(i)%d, ciiRLs(i)%f
-       END DO
-       CLOSE(201)
+!       301 FORMAT (F7.2, 1X, F6.4, 1X, F7.4, 1X, F7.4, 1X, F7.4, 1X, F7.4) 
+!       OPEN(201, file="atomic_data06/Rcii.dat", status='old')
+!       DO i = 1,57
+!         READ(201,301) ciiRLs(i)%Wave, ciiRLs(i)%a, ciiRLs(i)%b, &
+!         & ciiRLs(i)%c, ciiRLs(i)%d, ciiRLs(i)%f
+!       END DO
+!       CLOSE(201)
 
       te = te/10000
 
@@ -1389,13 +1393,13 @@
 
 ! read in NII data
 
-       301 FORMAT (F7.2, 1X, F6.3, 1X, F6.3, 1X, F6.3, 1X, F6.3, 1X, F7.4, 1X, F6.3) 
-       OPEN(201, file="atomic_data06/Rneii.dat", status='old')
-       DO i = 1,38
-         READ(201,301) neiiRLs(i)%Wave, neiiRLs(i)%a, neiiRLs(i)%b, &
-         & neiiRLs(i)%c, neiiRLs(i)%d, neiiRLs(i)%f, neiiRLs(i)%Br
-       END DO
-       CLOSE(201)
+!       301 FORMAT (F7.2, 1X, F6.3, 1X, F6.3, 1X, F6.3, 1X, F6.3, 1X, F7.4, 1X, F6.3) 
+!       OPEN(201, file="atomic_data06/Rneii.dat", status='old')
+!       DO i = 1,38
+!         READ(201,301) neiiRLs(i)%Wave, neiiRLs(i)%a, neiiRLs(i)%b, &
+!         & neiiRLs(i)%c, neiiRLs(i)%d, neiiRLs(i)%f, neiiRLs(i)%Br
+!       END DO
+!       CLOSE(201)
 
       te = te/10000
 
@@ -1496,13 +1500,13 @@
 
 ! read in NII data
 
-       301 FORMAT (A3,1X,F7.2, 1X, F5.3, 1X, F6.3, 1X, F5.3, 1X, F5.3, 1X, F5.4)
-       OPEN(201, file="atomic_data06/Rxiii.dat", status='old')
-       DO i = 1,6
-         READ(201,301) xiiiRLs(i)%ion, xiiiRLs(i)%Wave, xiiiRLs(i)%a, &
-         & xiiiRLs(i)%b, xiiiRLs(i)%c, xiiiRLs(i)%d, xiiiRLs(i)%Br
-       END DO
-       CLOSE(201)
+!       301 FORMAT (A3,1X,F7.2, 1X, F5.3, 1X, F6.3, 1X, F5.3, 1X, F5.3, 1X, F5.4)
+!       OPEN(201, file="atomic_data06/Rxiii.dat", status='old')
+!       DO i = 1,6
+!         READ(201,301) xiiiRLs(i)%ion, xiiiRLs(i)%Wave, xiiiRLs(i)%a, &
+!         & xiiiRLs(i)%b, xiiiRLs(i)%c, xiiiRLs(i)%d, xiiiRLs(i)%Br
+!       END DO
+!       CLOSE(201)
 
       te = te/90000 !ionic charge=3 so divide by 9
 

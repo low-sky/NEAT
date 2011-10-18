@@ -30,9 +30,10 @@
 ! ***** N.B!!  NO TRAPS FOR BAD DATA!!  TAKE CARE!! ****C
 !
       module mod_getabunds
+      use mod_atomicdata
       contains
 
-      subroutine get_abundance(ion,levels,tempi,densi,iobs,abund)
+      subroutine get_abundance(ion,levels,tempi,densi,iobs,abund,atomicdata)
       IMPLICIT NONE
       INTEGER NDIM1, NDIM2, NDIM1T3, MAXND
                                                       !Maximum no of Te & levels
@@ -53,6 +54,7 @@
      & HMH(NDIM1,NDIM1), D(NDIM1)
       CHARACTER*20 LABEL(NDIM2), ION
       CHARACTER*1 LTEXT(78)
+      TYPE(atomic_data), DIMENSION(:) :: atomicdata
       INTEGER I, I1, I2, J, K, L, II, JJ, KK, LL, JT, JJD,              &
      & IONL, NLINES, NLEV, NTEMP, IBIG, IRATS, NTRA, NSETS, ITEMP,      &
      & IN, NLEV1, KP1, INT, IND, IOPT, IT, IM1, JM1, IP1,               &
@@ -108,82 +110,99 @@
                                                         !Interrogate for input
 !      READ(5,1002) ION
       IONL = INDEX(ION,' ') - 1
-      OPEN(UNIT=1,STATUS='OLD',                                         &
-     & FILE='atomic_data06/'//ION(1:IONL)//'.dat')
+!      OPEN(UNIT=1,STATUS='OLD',                                         &
+!     & FILE='atomic_data06/'//ION(1:IONL)//'.dat')
 !     + NAME='atomic_data/'//ION(1:IONL)//'.dat')
                                                       !Read in no. comment lines
-      READ(1,*) NLINES
-      DO I = 1, NLINES
+!      READ(1,*) NLINES
+!      DO I = 1, NLINES
                                                                        !comments
-        READ(1,1003) LTEXT
+!        READ(1,1003) LTEXT
 !       WRITE(6,1003) LTEXT
-      ENDDO
+!      ENDDO
                                           !Read no. of levels (max=NDIM2) NLEV,
-      READ (1,*) NLEV, NTEMP
+!      READ (1,*) NLEV, NTEMP
                                           !no. of Te (max=NDIM1) NTEMP and the
-      DO I = 1, NLEV
+!      DO I = 1, NLEV
                                           !input format (cf Readme)
-         READ (1,1002) LABEL(I)
-      ENDDO
+!         READ (1,1002) LABEL(I)
+!      ENDDO
 !     be
       ibig=0
 !     WRITE(6,1004) (I,LABEL(I),I=1,NLEV)   !Tell user what levels are available
                                             !Read in Te's where coll. strengths
-      DO I = 1, NTEMP
+!      DO I = 1, NTEMP
                                             !are tabulated
-           READ (1,*) T(I)
-           T(I) = LOG10 (T(I))
-           ROOTT(I) = SQRT(T(I))
-      ENDDO
+!           READ (1,*) T(I)
+!           T(I) = LOG10 (T(I))
+!           ROOTT(I) = SQRT(T(I))
+!      ENDDO
                              !If IRATS=0, what tabulated are collision strengths
-      READ(1,*) IRATS
+!      READ(1,*) IRATS
 !                            !Else Coll. rates = tabulated values * 10 ** IRATS
-      IF(IBIG.EQ.0) THEN
-   10   READ (1,*) ID(2), JD(2), QX
-        IF (QX.EQ.0.D0) GOTO 20
-        IF (ID(2).EQ.0) THEN
-          ID(2) = ID(1)
-          K = K + 1
-        ELSE
-          ID(1) = ID(2)
-          K = 1
-        ENDIF
-        IF (JD(2).EQ.0) THEN
-          JD(2) = JD(1)
-        ELSE
-          JD(1) = JD(2)
-        ENDIF
-        I = ID(2)
-        J = JD(2)
-        QOM(K,I,J) = QX
-        GO TO 10
-      ENDIF
-   20 IF(IBIG.EQ.1.OR.IBIG.EQ.2) THEN
-        READ(1,*) NTRA
-        DO IN = 1, NTRA
-          READ(1,*) I,J,(QOM(ITEMP,I,J),ITEMP=1,NTEMP)
-        ENDDO
-      ENDIF
+!      IF(IBIG.EQ.0) THEN
+!   10   READ (1,*) ID(2), JD(2), QX
+!        IF (QX.EQ.0.D0) GOTO 20
+!        IF (ID(2).EQ.0) THEN
+!          ID(2) = ID(1)
+!          K = K + 1
+!        ELSE
+!          ID(1) = ID(2)
+!          K = 1
+!        ENDIF
+!        IF (JD(2).EQ.0) THEN
+!          JD(2) = JD(1)
+!        ELSE
+!          JD(1) = JD(2)
+!        ENDIF
+!        I = ID(2)
+!        J = JD(2)
+!        QOM(K,I,J) = QX
+!        GO TO 10
+!      ENDIF
+!   20 IF(IBIG.EQ.1.OR.IBIG.EQ.2) THEN
+!        READ(1,*) NTRA
+!        DO IN = 1, NTRA
+!          READ(1,*) I,J,(QOM(ITEMP,I,J),ITEMP=1,NTEMP)
+!        ENDDO
+!      ENDIF
                                                   !Read transition probabilities
-      NLEV1 = NLEV - 1
-      IF (IBIG.EQ.1) THEN
-       READ(1,7000) ((I,J,A(J,I),L=K+1,NLEV),K=1,NLEV1)
-      ELSE
-      DO K = 1, NLEV1
-        KP1 = K + 1
-          DO L = KP1, NLEV
-            READ (1,*) I, J, AX
-            A(J,I) = AX
-          ENDDO
-      ENDDO
-      ENDIF
+!      NLEV1 = NLEV - 1
+!      IF (IBIG.EQ.1) THEN
+!       READ(1,7000) ((I,J,A(J,I),L=K+1,NLEV),K=1,NLEV1)
+!      ELSE
+!      DO K = 1, NLEV1
+!        KP1 = K + 1
+!          DO L = KP1, NLEV
+!            READ (1,*) I, J, AX
+!            A(J,I) = AX
+!          ENDDO
+!      ENDDO
+!      ENDIF
                                  !Read statistical weights, energy levels (cm-1)
-      DO J = 1, NLEV
-        READ (1,*) I, GX, EX
-        G(I) = GX
-        E(I) = EX
-      ENDDO
-      CLOSE (UNIT=1)
+!      DO J = 1, NLEV
+!        READ (1,*) I, GX, EX
+!        G(I) = GX
+!        E(I) = EX
+!      ENDDO
+!      CLOSE (UNIT=1)
+
+      DO I=1,18
+          IF(ION(1:IONL) .eq. atomicdata(i)%ion(1:IONL)) then
+                LABEL = atomicdata(I)%label
+                NLEV = atomicdata(I)%NLEVS
+                NTEMP = atomicdata(I)%NTEMPS
+                T = atomicdata(I)%T
+                ROOTT = atomicdata(I)%ROOTT
+                IRATS = atomicdata(I)%IRATS
+                QOM = atomicdata(I)%Collision_strengths
+                A = atomicdata(I)%A_coefficients
+                G = atomicdata(I)%G
+                E = atomicdata(I)%wave_num
+          endif
+      enddo
+
+      NLEV1 = NLEV - 1
                                 !Get levels for ratio
 !      WRITE(6,1010)
                                                            !150 large enough
@@ -820,4 +839,4 @@
      &2X,'THE HIGHEST TEMP-COLLISION STRENGTH IS BEING USED,',/,        &
      &2X,'FOR T=',F8.4)
       END subroutine cfd
-      end module mod_getabunds
+      end module mod_getabunds  

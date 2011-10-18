@@ -1,4 +1,4 @@
-subroutine abundances(linelist, run, switch_ext,listlength, filename, iteration_result)
+subroutine abundances(linelist, run, switch_ext,listlength, filename, iteration_result, Iint, ILs,atomicdata,oiiRLs,niiRLs,ciiRLs,neiiRLs,xiiiRLs)
 use mod_abundmaths
 use mod_abundtypes
 use mod_diagnostics
@@ -8,6 +8,7 @@ use mod_helium
 use mod_recombination_lines
 use mod_extinction
 use mod_resultarrays
+use mod_atomicdata
 
 implicit none
 
@@ -40,6 +41,14 @@ implicit none
         TYPE(line), DIMENSION(4) :: H_BS
         TYPE(line), DIMENSION(4) :: He_lines
 
+! atomic data declarations
+        TYPE(atomic_data), DIMENSION(18) :: atomicdata
+        TYPE(oiiRL), DIMENSION(415) :: oiiRLs
+        TYPE(niiRL), DIMENSION(99) :: niiRLs
+        TYPE(ciiRL), DIMENSION(57) :: ciiRLs
+        TYPE(neiiRL), DIMENSION(38) :: neiiRLs
+        TYPE(xiiiRL), DIMENSION(6) :: xiiiRLs
+
 ! recombination line variables
 
         TYPE RLabund
@@ -67,7 +76,7 @@ implicit none
 
         !reading in Rogers "important" lines list
 
-        CALL read_ilines(ILs, Iint) 
+!        CALL read_ilines(ILs, Iint) 
 !redundant now
 !        CALL fileread(linelist, fname1, listlength) ! see above
         CALL element_assign(ILs, linelist, Iint, listlength)
@@ -168,25 +177,25 @@ implicit none
         if(runonce == 1) call system("rm "//trim(filename)//"_dered")
 
 !diagnostics
-        call get_diag("ciii1909   ","ciii1907   ", ILs, ciiiNratio)        ! ciii ratio
-        call get_diag("oii3729    ","oii3726    ", ILs, oiiNratio )        ! oii ratio
-        call get_diag("neiv2425   ","neiv2423   ", ILs, neivNratio )        ! neiv ratio
-        call get_diag("sii6731    ","sii6716    ", ILs, siiNratio )        ! s ii ratio
-        call get_diag("cliii5537  ","cliii5517  ", ILs, cliiiNratio )        ! Cl iii ratio
-        call get_diag("ariv4740   ","ariv4711   ", ILs, arivNratio )        ! Ar iv ratio
+        call get_diag("ciii1909   ","ciii1907   ", ILs, ciiiNratio , Iint)        ! ciii ratio
+        call get_diag("oii3729    ","oii3726    ", ILs, oiiNratio , Iint )        ! oii ratio
+        call get_diag("neiv2425   ","neiv2423   ", ILs, neivNratio , Iint )        ! neiv ratio
+        call get_diag("sii6731    ","sii6716    ", ILs, siiNratio , Iint )        ! s ii ratio
+        call get_diag("cliii5537  ","cliii5517  ", ILs, cliiiNratio , Iint )        ! Cl iii ratio
+        call get_diag("ariv4740   ","ariv4711   ", ILs, arivNratio , Iint)        ! Ar iv ratio
 
 ! temperature ratios:
         !Try to calculate from atomic data at start
-        CALL get_Tdiag("nii6548    ","nii6584    ","nii5754    ", ILs, DBLE(4.054), DBLE(1.3274), niiTratio)        ! N II
-        CALL get_Tdiag("oiii5007   ","oiii4959   ","oiii4363   ", ILs, DBLE(1.3356), DBLE(3.98), oiiiTratio)        ! O III
-        CALL get_Tdiag("neiii3868  ","neiii3967  ","neiii3342  ", ILs, DBLE(1.3013), DBLE(4.319), neiiiTratio)        ! Ne III
-        CALL get_Tdiag("neiii3868  ","neiii3967  ","neiii15p5um", ILs, DBLE(1.3013), DBLE(4.319), neiiiIRTratio)! Ne III ir
-        CALL get_Tdiag("nev3426    ","nev3345    ","nev2975    ", ILs, DBLE(1.3571), DBLE(3.800), nevTratio)        !!ne v
-        CALL get_Tdiag("siii9069   ","siii9531   ","siii6312   ", ILs, DBLE(3.47), DBLE(1.403), siiiTratio)        !s iii
-        CALL get_Tdiag("ariii7135  ","ariii7751  ","ariii5192  ",ILs, DBLE(1.24), DBLE(5.174), ariiiTratio)        !ar iii
-        CALL get_Tdiag("arv6435    ","arv7005    ","arv4625    ",ILs, DBLE(3.125), DBLE(1.471), arvTratio)        !ar v
-        CALL get_Tdiag("ci9850     ","ci9824     ","ci8727     ",ILs, DBLE(1.337), DBLE(3.965), ciTratio)      !C I
-        CALL get_Tdiag("oi6364     ","oi6300     ","oi5577     ",ILs, DBLE(4.127), DBLE(1.320), oiTratio)      !O I
+        CALL get_Tdiag("nii6548    ","nii6584    ","nii5754    ", ILs, DBLE(4.054), DBLE(1.3274), niiTratio, Iint)        ! N II
+        CALL get_Tdiag("oiii5007   ","oiii4959   ","oiii4363   ", ILs, DBLE(1.3356), DBLE(3.98), oiiiTratio, Iint)        ! O III
+        CALL get_Tdiag("neiii3868  ","neiii3967  ","neiii3342  ", ILs, DBLE(1.3013), DBLE(4.319), neiiiTratio, Iint)        ! Ne III
+        CALL get_Tdiag("neiii3868  ","neiii3967  ","neiii15p5um", ILs, DBLE(1.3013), DBLE(4.319), neiiiIRTratio, Iint)! Ne III ir
+        CALL get_Tdiag("nev3426    ","nev3345    ","nev2975    ", ILs, DBLE(1.3571), DBLE(3.800), nevTratio, Iint)        !!ne v
+        CALL get_Tdiag("siii9069   ","siii9531   ","siii6312   ", ILs, DBLE(3.47), DBLE(1.403), siiiTratio, Iint)        !s iii
+        CALL get_Tdiag("ariii7135  ","ariii7751  ","ariii5192  ",ILs, DBLE(1.24), DBLE(5.174), ariiiTratio, Iint)        !ar iii
+        CALL get_Tdiag("arv6435    ","arv7005    ","arv4625    ",ILs, DBLE(3.125), DBLE(1.471), arvTratio, Iint)        !ar v
+        CALL get_Tdiag("ci9850     ","ci9824     ","ci8727     ",ILs, DBLE(1.337), DBLE(3.965), ciTratio, Iint)      !C I
+        CALL get_Tdiag("oi6364     ","oi6300     ","oi5577     ",ILs, DBLE(4.127), DBLE(1.320), oiTratio, Iint)      !O I
         !Fixed, DJS
 
 
@@ -252,13 +261,13 @@ implicit none
 
          count = 0
          if (oiiNratio .gt. 0 .and. oiiNratio .lt. 1e10) then
-           call get_diagnostic("oii       ","1,2/                ","1,3/                ",oiiNratio,"D",lowtemp, oiiDens)
+           call get_diagnostic("oii       ","1,2/                ","1,3/                ",oiiNratio,"D",lowtemp, oiiDens,atomicdata)
            count = count + 1
 
          endif
 
          if (siiNratio .gt. 0 .and. siiNratio .lt. 1e10) then
-           call get_diagnostic("sii       ","1,2/                ","1,3/                ",siiNratio,"D",lowtemp, siiDens)
+           call get_diagnostic("sii       ","1,2/                ","1,3/                ",siiNratio,"D",lowtemp, siiDens,atomicdata)
            count = count + 1
 
          endif
@@ -272,7 +281,7 @@ implicit none
          count = 0
 
          if (oiiTratio .gt. 0 .and. oiiTratio .lt. 1e10) then
-           call get_diagnostic("oii       ","2,4,2,5,3,4,3,5/    ","1,2,1,3/            ",oiiTratio,"T",lowdens,oiiTemp)
+           call get_diagnostic("oii       ","2,4,2,5,3,4,3,5/    ","1,2,1,3/            ",oiiTratio,"T",lowdens,oiiTemp,atomicdata)
            count = count + 1
 
                  if(oiitemp == 20000)then
@@ -285,7 +294,7 @@ implicit none
          endif
 
          if (siiTratio .gt. 0 .and. siiTratio .lt. 1e10) then
-           call get_diagnostic("sii       ","1,2,1,3/            ","1,4,1,5/            ",siiTratio,"T",lowdens,siiTemp)
+           call get_diagnostic("sii       ","1,2,1,3/            ","1,4,1,5/            ",siiTratio,"T",lowdens,siiTemp,atomicdata)
            count = count + 1
 
                 if(siitemp == 20000)then
@@ -298,7 +307,7 @@ implicit none
          endif
 
          if (niiTratio .gt. 0 .and. niiTratio .lt. 1e10) then
-           call get_diagnostic("nii       ","2,4,3,4/            ","4,5/                ",niiTratio,"T",lowdens,niitemp)
+           call get_diagnostic("nii       ","2,4,3,4/            ","4,5/                ",niiTratio,"T",lowdens,niitemp,atomicdata)
            count = count + 5
 
                  if(niitemp == 20000)then
@@ -311,7 +320,7 @@ implicit none
          endif
 
          if (ciTratio .gt. 0 .and. ciTratio .lt. 1e10) then
-           call get_diagnostic("ci        ","2,4,3,4/            ","4,5/                ",ciTratio,"T",lowdens,citemp)
+           call get_diagnostic("ci        ","2,4,3,4/            ","4,5/                ",ciTratio,"T",lowdens,citemp,atomicdata)
            count = count + 1
 
                 if(citemp == 20000)then
@@ -324,7 +333,7 @@ implicit none
          endif
 
          if (oiTratio .gt. 0 .and. oiTratio .lt. 1e10) then
-           call get_diagnostic("oi        ","1,4,2,4/            ","4,5/                ",oiTratio,"T",lowdens,oitemp)
+           call get_diagnostic("oi        ","1,4,2,4/            ","4,5/                ",oiTratio,"T",lowdens,oitemp,atomicdata)
            count = count + 1
 
          if(oitemp == 20000)then
@@ -357,16 +366,16 @@ implicit none
 
          count = 0
          if (cliiiNratio .gt. 0 .and. cliiiNratio .lt. 1e10) then
-           call get_diagnostic("cliii     ","1,2/                ","1,3/                ",cliiiNratio,"D",medtemp, cliiiDens)
+           call get_diagnostic("cliii     ","1,2/                ","1,3/                ",cliiiNratio,"D",medtemp, cliiiDens,atomicdata)
 
            count = count + 1
          endif
          if (ciiiNratio .gt. 0 .and. ciiiNratio .lt. 1e10) then
-           call get_diagnostic("ciii      ","1,2/                ","1,3/                ",ciiiNratio,"D",medtemp, ciiiDens)
+           call get_diagnostic("ciii      ","1,2/                ","1,3/                ",ciiiNratio,"D",medtemp, ciiiDens,atomicdata)
            count = count + 1
          endif
          if (arivNratio .gt. 0 .and. arivNratio .lt. 1e10) then
-           call get_diagnostic("ariv      ","1,2/                ","1,3/                ",arivNratio,"D",medtemp, arivDens)
+           call get_diagnostic("ariv      ","1,2/                ","1,3/                ",arivNratio,"D",medtemp, arivDens,atomicdata)
            count = count + 1
          endif
 
@@ -379,7 +388,7 @@ implicit none
          count = 0
 
          if (oiiiTratio .gt. 0 .and. oiiiTratio .lt. 1e10) then
-           call get_diagnostic("oiii      ","2,4,3,4/            ","4,5/                ",oiiiTratio,"T",meddens,oiiiTemp)
+           call get_diagnostic("oiii      ","2,4,3,4/            ","4,5/                ",oiiiTratio,"T",meddens,oiiiTemp,atomicdata)
            count = count + 4
                  if(oiiitemp == 20000)then
                          count=count-4
@@ -390,7 +399,7 @@ implicit none
            oiiiTemp = 0.0
          endif
          if (siiiTratio .gt. 0 .and. siiiTratio .lt. 1e10) then
-           call get_diagnostic("siii      ","2,4,3,4/            ","4,5/                ",siiiTratio,"T",meddens,siiiTemp)
+           call get_diagnostic("siii      ","2,4,3,4/            ","4,5/                ",siiiTratio,"T",meddens,siiiTemp,atomicdata)
            count = count + 1
 
                 if(siiitemp == 20000)then
@@ -402,7 +411,7 @@ implicit none
            siiiTemp = 0.0
          endif
          if (ariiiTratio .gt. 0 .and. ariiiTratio .lt. 1e10) then
-           call get_diagnostic("ariii     ","1,4,2,4/            ","4,5/                ",ariiiTratio,"T",meddens,ariiitemp)
+           call get_diagnostic("ariii     ","1,4,2,4/            ","4,5/                ",ariiiTratio,"T",meddens,ariiitemp,atomicdata)
            count = count + 2
                  if(ariiitemp == 20000)then
                          count=count-2
@@ -412,7 +421,7 @@ implicit none
            ariiitemp = 0.0
          endif
          if (neiiiTratio .gt. 0 .and. neiiiTratio .lt. 1e10) then
-           call get_diagnostic("neiii     ","1,4,2,4/            ","4,5/                ",neiiiTratio,"T",meddens,neiiitemp)
+           call get_diagnostic("neiii     ","1,4,2,4/            ","4,5/                ",neiiiTratio,"T",meddens,neiiitemp,atomicdata)
            count = count + 2
                 if(neiiitemp == 20000)then
                          count=count-2
@@ -438,7 +447,7 @@ implicit none
       do i = 1,2
 
          if (neivNratio .gt. 0 .and. neivNratio .lt. 1e10) then
-           call get_diagnostic("neiv      ","1,2/                ","1,3/                ",neivNratio,"D",hightemp, neivDens)
+           call get_diagnostic("neiv      ","1,2/                ","1,3/                ",neivNratio,"D",hightemp, neivDens,atomicdata)
            highdens = neivdens
          else
            neivDens = 0.0
@@ -448,13 +457,13 @@ implicit none
          count = 0
 
          if (arvTratio .gt. 0 .and. arvTratio .lt. 1e10) then
-           call get_diagnostic("arv       ","2,4,3,4/            ","4,5/                ",arvTratio,"T",highdens,arvTemp)
+           call get_diagnostic("arv       ","2,4,3,4/            ","4,5/                ",arvTratio,"T",highdens,arvTemp,atomicdata)
            count = count + 1
          else
            arvTemp = 0.0
          endif
          if (nevTratio .gt. 0 .and. nevTratio .lt. 1e10) then
-           call get_diagnostic("nev       ","2,4,3,4/            ","4,5/                ",nevTratio,"T",highdens,nevtemp)
+           call get_diagnostic("nev       ","2,4,3,4/            ","4,5/                ",nevTratio,"T",highdens,nevtemp,atomicdata)
            count = count + 1
          else
            nevtemp = 0.0
@@ -688,15 +697,15 @@ if(A4686 > 0)        print "(1x,A17,F6.4)", "He++ (4686)/H+ = ", A4686
 !                 print *,ILs(i)%ion,ILs(i)%transition,ILs(i)%int_dered
            if (ILs(i)%zone .eq. "low ") then
                 !PRINT*, siiitemp, lowdens
-                 call get_abundance(ILs(i)%ion, ILs(i)%transition, lowtemp, lowdens,ILs(i)%int_dered, ILs(i)%abundance)
+                 call get_abundance(ILs(i)%ion, ILs(i)%transition, lowtemp, lowdens,ILs(i)%int_dered, ILs(i)%abundance,atomicdata)
                  ! elseif ( ( i== 47 .or. (i == 46 .or. i == 28 ) ) .and. siiitemp > 1.0 ) then
           !       call get_abundance(ILs(i)%ion, ILs(i)%transition, siiitemp, meddens,ILs(i)%int_dered, ILs(i)%abundance)
                 !this makes the code use siii temperatures for siii
                 ! print*, "using this bit"
            elseif (ILs(i)%zone .eq. "med ") then
-                 call get_abundance(ILs(i)%ion, ILs(i)%transition, medtemp, meddens,ILs(i)%int_dered, ILs(i)%abundance)
+                 call get_abundance(ILs(i)%ion, ILs(i)%transition, medtemp, meddens,ILs(i)%int_dered, ILs(i)%abundance,atomicdata)
            elseif (ILs(i)%zone .eq. "high") then
-                 call get_abundance(ILs(i)%ion, ILs(i)%transition, hightemp, highdens,ILs(i)%int_dered, ILs(i)%abundance)
+                 call get_abundance(ILs(i)%ion, ILs(i)%transition, hightemp, highdens,ILs(i)%int_dered, ILs(i)%abundance,atomicdata)
            endif
                  if ((ILs(i)%abundance .gt. 0) .and. (ILs(i)%abundance < 1 ) ) then
                        PRINT "(1X, A11, 1X, F7.3, 5X, ES10.4)",ILs(i)%name,ILs(i)%int_dered,ILs(i)%abundance
@@ -1697,10 +1706,10 @@ if(adfne>0) print "(A12,F5.2)","adf (Ne)  = ", adfne
 
 contains
 
-        SUBROUTINE get_diag(name1, name2, lines, diag)
+        SUBROUTINE get_diag(name1, name2, lines, diag, Iint)
                 TYPE(line), DIMENSION(51), INTENT(IN) :: lines
                 CHARACTER*11 :: name1, name2
-                INTEGER :: ion_no1, ion_no2
+                INTEGER :: ion_no1, ion_no2, Iint
                 DOUBLE PRECISION :: diag
 
                 ion_no1 = get_ion(name1, ILs, Iint)
@@ -1714,11 +1723,11 @@ contains
 
         END SUBROUTINE
 
-        SUBROUTINE get_Tdiag(name1, name2, name3, lines, factor1, factor2, ratio)
+        SUBROUTINE get_Tdiag(name1, name2, name3, lines, factor1, factor2, ratio, Iint)
                                                         !3.47,   1.403   SIII
                 TYPE(line), DIMENSION(51), INTENT(IN) :: lines
                 CHARACTER*11 :: name1, name2, name3
-                INTEGER :: ion_no1, ion_no2, ion_no3
+                INTEGER :: ion_no1, ion_no2, ion_no3, Iint
                 DOUBLE PRECISION :: diag, factor1, factor2, ratio, ratio2
 
 
