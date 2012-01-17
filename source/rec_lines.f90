@@ -2,7 +2,8 @@
 ! RW May 2009
 
       module mod_recombination_lines
-
+      use omp_lib
+	  
       TYPE oiiRL
             CHARACTER*1 :: Hyb
             CHARACTER*1 :: n_E1
@@ -129,7 +130,7 @@
      & logem
       DOUBLE PRECISION :: a, b, c, d, an(4)
 
-      INTEGER :: i
+      INTEGER :: i,fileunit
 
   !    TYPE oiiRL
   !          CHARACTER*1 :: Hyb
@@ -166,7 +167,8 @@
   !    END TYPE
 
       TYPE(oiiRL), DIMENSION(415) :: oiiRLs
-
+      fileunit = 201
+	  !$ fileunit = 200+omp_get_thread_num()
 ! first, calculate H recombination coefficient
 
       AE2 = -9.06524E+00 -2.69954E+00 * log10(te) + 8.80123E-01 * &
@@ -222,9 +224,9 @@
      & 1X, A3, 1X, F7.4, 1X, A3, 1X, A7, 3X, F11.4, A1, A1, 1X, I2, &
      &1X, A1, 1X, A9, 1X, F13.4, 1X, A1, A1, 1X, I2, 1X, A1, 1X, A9, 1X,&
      & F7.4, 1X, F7.4, 1X, F7.4)!, 1X, E10.4, 1X, E10.4, 1X)
-            OPEN(201, file="Atomic-data/Roii.dat", status='old')
+            OPEN(fileunit, file="Atomic-data/Roii.dat", status='old')
             DO i = 1,415
-            READ(201,301) oiiRLs(i)%ION, oiiRLs(i)%Wave, oiiRLs(i)%Hyb, &
+            READ(fileunit,301) oiiRLs(i)%ION, oiiRLs(i)%Wave, oiiRLs(i)%Hyb, &
      &oiiRLs(i)%Rem1, oiiRLs(i)%Rem2, oiiRLs(i)%Rem3, oiiRLs(i)%Rem4,   &
      &oiiRLs(i)%gf1, oiiRLs(i)%q_gf1, oiiRLs(i)%gf2, oiiRLs(i)%q_gf2,   &
      &oiiRLs(i)%Mult, oiiRLs(i)%E1, oiiRLs(i)%n_E1, oiiRLs(i)%n_E1GA,   &
@@ -232,7 +234,7 @@
      &oiiRLs(i)%n_E2, oiiRLs(i)%n_E2GA, oiiRLs(i)%g2, oiiRLs(i)%n_g2,   &
      &oiiRLs(i)%Term2, oiiRLs(i)%Br_A, oiiRLs(i)%Br_B, oiiRLs(i)%Br_C 
             END DO 
-      CLOSE(201)
+      CLOSE(fileunit)
 
 ! 4f-3d transitions
 
@@ -738,7 +740,7 @@
      & logem, Br_term, z, J2_u
       DOUBLE PRECISION :: a, b, c, d, an(4)
 
-      INTEGER :: ii, i
+      INTEGER :: ii, i,fileunit
 
       !TYPE niiRL
       !      CHARACTER*1 :: Hyb
@@ -773,7 +775,8 @@
       !END TYPE
 
       TYPE(niiRL), DIMENSION(99) :: niiRLs
-
+       fileunit = 201
+	  !$	  fileunit = 200+omp_get_thread_num()
 ! first, calculate H recombination coefficient
 
       AE2 = -9.06524E+00 -2.69954E+00 * log10(te) + 8.80123E-01 * &
@@ -829,9 +832,9 @@
      & 1X, A3, 1X, F7.4, 1X, A3, 1X, A7, 3X, F11.4, A1, A1, 1X, I2, &
      &1X, A1, 1X, A9, 1X, F13.4, 1X, A1, A1, 1X, I2, 1X, A1, 1X, A9, 1X,&
      & F7.4, 1X, F7.4, 1X, F7.4)!, 1X, E10.4, 1X, E10.4, 1X)
-            OPEN(201, file="Atomic-data/Rnii.dat", status='old')
+            OPEN(fileunit, file="Atomic-data/Rnii.dat", status='old')
             DO i = 1,99
-            READ(201,301) niiRLs(i)%ION, niiRLs(i)%Wave, niiRLs(i)%Hyb, &
+            READ(fileunit,301) niiRLs(i)%ION, niiRLs(i)%Wave, niiRLs(i)%Hyb, &
      &niiRLs(i)%Rem1, niiRLs(i)%Rem2, niiRLs(i)%Rem3, niiRLs(i)%Rem4,   &
      &niiRLs(i)%gf1, niiRLs(i)%q_gf1, niiRLs(i)%gf2, niiRLs(i)%q_gf2,   &
      &niiRLs(i)%Mult, niiRLs(i)%E1, niiRLs(i)%n_E1, niiRLs(i)%n_E1GA,   &
@@ -839,7 +842,7 @@
      &niiRLs(i)%n_E2, niiRLs(i)%n_E2GA, niiRLs(i)%g2, niiRLs(i)%n_g2,   &
      &niiRLs(i)%Term2, niiRLs(i)%Br_LS
             END DO
-      CLOSE(201)
+      CLOSE(fileunit)
 
       te = te/10000
 
@@ -1218,7 +1221,7 @@
      & logem, Br_term, z, J2_u
       DOUBLE PRECISION :: a, b, c, d
 
-      INTEGER :: ii, i
+      INTEGER :: ii, i,fileunit
 
    !   TYPE ciiRL 
    !         DOUBLE PRECISION :: Wave
@@ -1235,6 +1238,8 @@
 
       TYPE(ciiRL), DIMENSION(57) :: ciiRLs
 
+	      fileunit = 201
+	  	  !$ fileunit = 200+omp_get_thread_num()
 ! first, calculate H recombination coefficient
 
       AE2 = -9.06524E+00 -2.69954E+00 * log10(te) + 8.80123E-01 * &
@@ -1284,12 +1289,12 @@
 ! read in NII data
 
        301 FORMAT (F7.2, 1X, F6.4, 1X, F7.4, 1X, F7.4, 1X, F7.4, 1X, F7.4) 
-       OPEN(201, file="Atomic-data/Rcii.dat", status='old')
+       OPEN(fileunit, file="Atomic-data/Rcii.dat", status='old')
        DO i = 1,57
-         READ(201,301) ciiRLs(i)%Wave, ciiRLs(i)%a, ciiRLs(i)%b, &
+         READ(fileunit,301) ciiRLs(i)%Wave, ciiRLs(i)%a, ciiRLs(i)%b, &
          & ciiRLs(i)%c, ciiRLs(i)%d, ciiRLs(i)%f
        END DO
-       CLOSE(201)
+       CLOSE(fileunit)
 
       te = te/10000
 
@@ -1323,7 +1328,7 @@
      & logem
       DOUBLE PRECISION :: a, b, c, d, f
 
-      INTEGER :: ii, i
+      INTEGER :: ii, i,fileunit
 
   !    TYPE neiiRL 
   !          DOUBLE PRECISION :: Wave
@@ -1340,7 +1345,9 @@
   !    END TYPE
 
       TYPE(neiiRL), DIMENSION(38) :: neiiRLs
-
+           fileunit = 201
+	  	  !$ fileunit = 200+omp_get_thread_num()
+	  
 ! first, calculate H recombination coefficient
 
       AE2 = -9.06524E+00 -2.69954E+00 * log10(te) + 8.80123E-01 * &
@@ -1390,12 +1397,12 @@
 ! read in NII data
 
        301 FORMAT (F7.2, 1X, F6.3, 1X, F6.3, 1X, F6.3, 1X, F6.3, 1X, F7.4, 1X, F6.3) 
-       OPEN(201, file="Atomic-data/Rneii.dat", status='old')
+       OPEN(fileunit, file="Atomic-data/Rneii.dat", status='old')
        DO i = 1,38
-         READ(201,301) neiiRLs(i)%Wave, neiiRLs(i)%a, neiiRLs(i)%b, &
+         READ(fileunit,301) neiiRLs(i)%Wave, neiiRLs(i)%a, neiiRLs(i)%b, &
          & neiiRLs(i)%c, neiiRLs(i)%d, neiiRLs(i)%f, neiiRLs(i)%Br
        END DO
-       CLOSE(201)
+       CLOSE(fileunit)
 
       te = te/10000
 
@@ -1430,7 +1437,7 @@
      & logem
       DOUBLE PRECISION :: a, b, c, d
 
-      INTEGER :: ii, i
+      INTEGER :: ii, i,fileunit
 
  !     TYPE xiiiRL 
   !          CHARACTER*3      :: Ion
@@ -1447,7 +1454,9 @@
       !END TYPE
 
       TYPE(xiiiRL), DIMENSION(6) :: xiiiRLs
-
+           fileunit = 201
+	  	  !$ fileunit = 200+omp_get_thread_num()
+	  
 ! first, calculate H recombination coefficient
 
       AE2 = -9.06524E+00 -2.69954E+00 * log10(te) + 8.80123E-01 * &
@@ -1497,12 +1506,12 @@
 ! read in NII data
 
        301 FORMAT (A3,1X,F7.2, 1X, F5.3, 1X, F6.3, 1X, F5.3, 1X, F5.3, 1X, F5.4)
-       OPEN(201, file="Atomic-data/Rxiii.dat", status='old')
+       OPEN(fileunit, file="Atomic-data/Rxiii.dat", status='old')
        DO i = 1,6
-         READ(201,301) xiiiRLs(i)%ion, xiiiRLs(i)%Wave, xiiiRLs(i)%a, &
+         READ(fileunit,301) xiiiRLs(i)%ion, xiiiRLs(i)%Wave, xiiiRLs(i)%a, &
          & xiiiRLs(i)%b, xiiiRLs(i)%c, xiiiRLs(i)%d, xiiiRLs(i)%Br
        END DO
-       CLOSE(201)
+       CLOSE(fileunit)
 
       te = te/90000 !ionic charge=3 so divide by 9
 

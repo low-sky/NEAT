@@ -4,6 +4,7 @@ program wrapper
         use mod_abundtypes
         use mod_resultarrays
         use mod_extinction
+		use omp_lib
 
         CHARACTER*10 :: temp, tempa
         CHARACTER :: switch_ext !switch for extinction laws
@@ -180,12 +181,12 @@ program wrapper
         else if(runs > 1)then
 
                 linelist_original = linelist
-
+                !$ call OMP_set_num_threads(omp_get_num_procs())
                 call init_random_seed()!sets seed for randomiser
                 allocate(all_results(runs))
 
                 !open/create files here for adundances
-
+				!$omp parallel do firstprivate(linelist,iteration_result)
                 DO I=1,runs
                         print*, "-=-=-=-=-=-=-=-"
                         print*, "iteration ", i
@@ -199,7 +200,7 @@ program wrapper
                         linelist = linelist_original
                         all_results(i)=iteration_result(1)
                 END DO
-
+				!$omp end parallel do
                 OPEN(841, FILE=trim(filename)//"_NC_abund_CEL", STATUS='REPLACE', ACCESS='SEQUENTIAL', ACTION='WRITE')
                 OPEN(842, FILE=trim(filename)//"_C_abund_CEL", STATUS='REPLACE', ACCESS='SEQUENTIAL', ACTION='WRITE')
                 OPEN(843, FILE=trim(filename)//"_Nii_abund_CEL", STATUS='REPLACE', ACCESS='SEQUENTIAL', ACTION='WRITE')

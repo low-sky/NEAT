@@ -1,27 +1,29 @@
 module mod_abundIO
 use mod_abundtypes
+use omp_lib
 implicit none!
 
 contains
 
 subroutine read_ilines(ILs, Iint)        
         TYPE(line), DIMENSION(:), allocatable :: ILs
-        INTEGER :: Iint, Iread
+        INTEGER :: Iint, Iread,filenum
 
         Iint = 1
-
+        filenum = 201 + omp_get_thread_num()
         301 FORMAT(A11, 1X, A6, 1X, F7.2, 1X, A20,1X,A4)
-        OPEN(201, file="source/Ilines_levs", status='old')
-                READ (201,*) Iread
+        OPEN(filenum, file="source/Ilines_levs", status='old')
+		rewind filenum
+                READ (filenum,*) Iread
                 ALLOCATE (ILs(Iread))
                 ILs%intensity=0.D0 !otherwise it seems you can get random very small numbers in the array.
                 DO WHILE (Iint .le. Iread)!(.true.)
-                        READ(201,301,end=401) ILs(Iint)%name, ILs(Iint)%ion, ILs(Iint)%wavelength, ILs(Iint)%transition ,ILs(Iint)%zone!end condition breaks loop.  
+                        READ(filenum,301,end=401) ILs(Iint)%name, ILs(Iint)%ion, ILs(Iint)%wavelength, ILs(Iint)%transition ,ILs(Iint)%zone!end condition breaks loop.  
                         Iint = Iint + 1
                 END DO
                 Iint = Iint - 1 !count ends up one too high
                 401 PRINT "(A19,I3,A6)", " Read in CEL list, ",Iint," lines"
-        CLOSE(201)
+        CLOSE(filenum)
 end subroutine        
 
 end module

@@ -32,9 +32,11 @@
 ! ***** N.B!!  NO TRAPS FOR BAD DATA!!  TAKE CARE!! ****C
 !
       module mod_diagnostics
+
       contains
 
       subroutine get_diagnostic(ion,levu,levl,inratio,diagtype,fixedq,result)
+	  	  use omp_lib
       IMPLICIT NONE
       INTEGER NDIM1, NDIM2, NDIM1T3, MAXND
                                                       !Maximum no of Te & levels
@@ -59,7 +61,7 @@
       INTEGER I, I1, I2, J, K, L, II, JJ, KK, LL, JT, JJD,              &
      & IONL, NLINES, NLEV, NTEMP, IBIG, IRATS, NTRA, NSETS, ITEMP,      &
      & IN, NLEV1, KP1, INT, IND, IOPT, IT, IM1, JM1, IP1,               &
-     & IAPR, IBPR, ICPR, IKT, IA, IB, IC, IA1, IA2, IB1, IB2, IC1, IC2
+     & IAPR, IBPR, ICPR, IKT, IA, IB, IC, IA1, IA2, IB1, IB2, IC1, IC2,fileunit
       REAL*8 TEMPI, TINC, DENSI, DINC, DENS, DLOGD, TEMP, TLOGT,        &
      & TEMP2, DD, DELTEK, EXPE, VALUE, SUMN, TTT, TTP, AHB, EJI, WAV,   &
      & RLINT, FINT, SUMA, SUMB, SUMC, QX, AX, EX, FRAT, DEE
@@ -83,7 +85,7 @@
 !      call get_command_argument(4,inratioch)
 !      call get_command_argument(5,diagtype)
 !      call get_command_argument(6,fixedqch)
-
+         print*,'equib started'
       if (diagtype .ne. "t" .and. diagtype .ne. "T" .and. &
           & diagtype .ne. "d" .and. diagtype .ne. "D") then
          print *,"Diagnostic type must be either T or D"
@@ -106,6 +108,8 @@
       itrana=0
       itranb=0
       itranc=0
+	  fileunit = 201
+      !$      fileunit = 201 + omp_get_thread_num()
 
       READ(levu,*) ((ITRANA(LL,KK),LL=1,2),KK=1,150)
       READ(levl,*) ((ITRANB(LL,KK),LL=1,2),KK=1,150)
@@ -117,22 +121,25 @@
                                                         !Interrogate for input
       !READ(5,1002) ION
       IONL = INDEX(ION,' ') - 1
-      OPEN(UNIT=1,STATUS='OLD',                                         &
+	  !$omp critical
+	  print*, 'open file'
+      OPEN(UNIT=fileunit,STATUS='OLD',                                         &
      & FILE='Atomic-data/'//ION(1:IONL)//'.dat')
 !     + NAME='atomic_data/'//ION(1:IONL)//'.dat')
+         print*,'begin reading'
                                                       !Read in no. comment lines
-      READ(1,*) NLINES
+      read(fileunit,*) NLINES
       DO I = 1, NLINES
                                                                        !Comments
-        READ(1,1003) LTEXT
+        read(fileunit,1003) LTEXT
 !       WRITE(6,1003) LTEXT
       ENDDO
                                           !Read no. of levels (max=NDIM2) NLEV,
-      READ (1,*) NLEV, NTEMP
+      read(fileunit,*) NLEV, NTEMP
                                           !no. of Te (max=NDIM1) NTEMP and the
       DO I = 1, NLEV
                                           !input format (cf Readme)
-         READ (1,1002) LABEL(I)
+         read(fileunit,1002) LABEL(I)
       ENDDO
 !     be
       ibig=0
@@ -140,7 +147,7 @@
                                             !Read in Te's where coll. strengths
       DO I = 1, NTEMP
                                             !are tabulated
-           READ (1,*) T(I)
+           read(fileunit,*) T(I)
            T(I) = LOG10 (T(I))
            ROOTT(I) = SQRT(T(I))
       ENDDO
@@ -148,10 +155,10 @@
 
 
                              !If IRATS=0, what tabulated are collision strengths
-      READ(1,*) IRATS
+      read(fileunit,*) IRATS
 !                            !Else Coll. rates = tabulated values * 10 ** IRATS
       IF(IBIG.EQ.0) THEN
-   10   READ (1,*) ID(2), JD(2), QX
+   10   read(fileunit,*) ID(2), JD(2), QX
         IF (QX.EQ.0.D0) GOTO 20
         IF (ID(2).EQ.0) THEN
           ID(2) = ID(1)
@@ -171,31 +178,33 @@
         GO TO 10
       ENDIF
    20 IF(IBIG.EQ.1.OR.IBIG.EQ.2) THEN
-        READ(1,*) NTRA
+        read(fileunit,*) NTRA
         DO IN = 1, NTRA
-          READ(1,*) I,J,(QOM(ITEMP,I,J),ITEMP=1,NTEMP)
+          read(fileunit,*) I,J,(QOM(ITEMP,I,J),ITEMP=1,NTEMP)
         ENDDO
       ENDIF
                                                   !Read transition probabilities
       NLEV1 = NLEV - 1
       IF (IBIG.EQ.1) THEN
-       READ(1,7000) ((I,J,A(J,I),L=K+1,NLEV),K=1,NLEV1)
+       read(fileunit,7000) ((I,J,A(J,I),L=K+1,NLEV),K=1,NLEV1)
       ELSE
       DO K = 1, NLEV1
         KP1 = K + 1
           DO L = KP1, NLEV
-            READ (1,*) I, J, AX
+            read(fileunit,*) I, J, AX
             A(J,I) = AX
           ENDDO
       ENDDO
       ENDIF
                                  !Read statistical weights, energy levels (cm-1)
       DO J = 1, NLEV
-        READ (1,*) I, GX, EX
+        read(fileunit,*) I, GX, EX
         G(I) = GX
         E(I) = EX
       ENDDO
-      CLOSE (UNIT=1)
+      CLOSE (UNIT=fileunit)
+	  print*,'close file'
+	  !$omp end critical
                                 !Get levels for ratio
 !      WRITE(6,1010)
                                                            !150 large enough

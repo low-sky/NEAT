@@ -1,5 +1,5 @@
 COM=gfortran
-OPTS=-ffree-line-length-0 -fbounds-check
+OPTS=-fopenmp -ffree-line-length-0 -fbounds-check
 
 all:
 

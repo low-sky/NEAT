@@ -69,9 +69,9 @@ implicit none
         !file reading stuff
 
         !reading in Rogers "important" lines list
-
+!$omp critical
         CALL read_ilines(ILs, Iint)
-
+!$omp end critical
 !redundant now
 !        CALL fileread(linelist, fname1, listlength) ! see above
         CALL element_assign(ILs, linelist, Iint, listlength)
@@ -167,7 +167,7 @@ implicit none
                 call deredden_Fitz(He_lines, 4, meanextinction)
                 CALL deredden_Fitz(linelist, listlength, meanextinction)
         endif
-
+       print*,'Extinction complete'
 
 !diagnostics
         call get_diag("ciii1909   ","ciii1907   ", ILs, ciiiNratio)        ! ciii ratio
@@ -181,6 +181,7 @@ implicit none
         call get_diag("neiii15p5um","neiii36p0um", ILs, neiiiIRNratio )       ! neiii ir ratio
         call get_diag("ariii9um   ","ariii21p8um", ILs, ariiiIRNratio )       ! ariii ir ratio
 
+		print*,'get_diag complete'
 ! temperature ratios:
         !TODO: try to calculate from atomic data at start
         CALL get_Tdiag("nii6548    ","nii6584    ","nii5754    ", ILs, DBLE(4.054), DBLE(1.3274), niiTratio)        ! N II
@@ -196,6 +197,7 @@ implicit none
         CALL get_Tdiag("oiii4959   ","oiii5007   ","oiii52um   ", ILS, DBLE(1.3356), DBLE(3.98), oiiiIRTratio) ! OIII ir
         !Fixed, DJS
 
+		print*,'get_Tdiag complete'
 ! O II
 
 
@@ -249,6 +251,8 @@ implicit none
 
 ! now get diagnostics zone by zone.
 
+      print*,'starting zone diagnostics'
+
 ! low ionisation
         ! Edited to stop high limits being included in diagnostic averages. DJS
       lowtemp = 10000.0
@@ -258,12 +262,16 @@ implicit none
         siiDens=0
          count = 0
          if (oiiNratio .gt. 0 .and. oiiNratio .lt. 1e10) then
+		 print*,'get diagnostic oii'
            call get_diagnostic("oii       ","1,2/                ","1,3/                ",oiiNratio,"D",lowtemp, oiiDens)
+		   print*,'diagnostic got'
            count = count + 1
          endif
 
          if (siiNratio .gt. 0 .and. siiNratio .lt. 1e10) then
+		 print*,'get diagnostic sii'
            call get_diagnostic("sii       ","1,2/                ","1,3/                ",siiNratio,"D",lowtemp, siiDens)
+		   print*,'diagnostic got'
            count = count + 1
          endif
 
