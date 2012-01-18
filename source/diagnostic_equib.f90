@@ -36,7 +36,7 @@
       contains
 
       subroutine get_diagnostic(ion,levu,levl,inratio,diagtype,fixedq,result)
-	  	  use omp_lib
+	  	!$  use omp_lib
       IMPLICIT NONE
       INTEGER NDIM1, NDIM2, NDIM1T3, MAXND
                                                       !Maximum no of Te & levels
@@ -45,23 +45,25 @@
       PARAMETER (NDIM1T3 = 105)
                                                    !Maximum no. of Ne increments
       PARAMETER (MAXND=100)
-      INTEGER GX, G(NDIM2), ID(2), JD(2),                               &
-     &  ITRANA(2,NDIM2),ITRANB(2,NDIM2),ITRANC(2,NDIM2),LOOP
-      REAL*8 N2(NDIM2),N(NDIM2)
-      REAL*8 TDRAT(2,MAXND), TNIJ(NDIM2,NDIM2), FINTIJ(NDIM2,NDIM2),    &
-     & WAVA(NDIM2), WAVB(NDIM2), WAVC(NDIM2), CS(NDIM2,NDIM2),          &
-     & QEFF(NDIM2,NDIM2), QQ(NDIM1), Q(NDIM1,NDIM2,NDIM2),              &
-     & QOM(NDIM1,NDIM2,NDIM2), A(NDIM2,NDIM2), E(NDIM2), T(NDIM1),      &
-     & ROOTT(NDIM1), X(NDIM2,NDIM2), Y(NDIM2),                          &
-     & X2(NDIM2,NDIM2), XKEEP(NDIM2,NDIM2), Y2(NDIM2), YKEEP(NDIM2),    &
-     & HMH(NDIM1,NDIM1), D(NDIM1)
-      CHARACTER*20 LABEL(NDIM2)
+      INTEGER GX, ID(2), JD(2)                              ! &
+ !    &  ITRANA(2,NDIM2),ITRANB(2,NDIM2),ITRANC(2,NDIM2)
+      integer,allocatable :: ITRANA(:,:),ITRANB(:,:),ITRANC(:,:),G(:)
+      REAL*8,allocatable :: N2(:),N(:)
+      REAL*8,allocatable :: TDRAT(:,:), TNIJ(:,:), FINTIJ(:,:),    &
+     & WAVA(:), WAVB(:), WAVC(:), CS(:,:),          &
+     & QEFF(:,:), QQ(:), Q(:,:,:),              &
+     & QOM(:,:,:), A(:,:), E(:), T(:),      &
+     & ROOTT(:), X(:,:), Y(:),                          &
+     & X2(:,:), XKEEP(:,:), Y2(:), YKEEP(:),    &
+     & HMH(:,:), D(:)
+      CHARACTER*20,allocatable :: LABEL(:)
       CHARACTER*10 ION
       CHARACTER*1 LTEXT(78)
       INTEGER I, I1, I2, J, K, L, II, JJ, KK, LL, JT, JJD,              &
      & IONL, NLINES, NLEV, NTEMP, IBIG, IRATS, NTRA, NSETS, ITEMP,      &
      & IN, NLEV1, KP1, INT, IND, IOPT, IT, IM1, JM1, IP1,               &
-     & IAPR, IBPR, ICPR, IKT, IA, IB, IC, IA1, IA2, IB1, IB2, IC1, IC2,fileunit
+     & IAPR, IBPR, ICPR, IKT, IA, IB, IC, IA1, IA2, IB1, IB2, IC1, IC2, &
+     & fileunit,LOOP
       REAL*8 TEMPI, TINC, DENSI, DINC, DENS, DLOGD, TEMP, TLOGT,        &
      & TEMP2, DD, DELTEK, EXPE, VALUE, SUMN, TTT, TTP, AHB, EJI, WAV,   &
      & RLINT, FINT, SUMA, SUMB, SUMC, QX, AX, EX, FRAT, DEE
@@ -85,7 +87,38 @@
 !      call get_command_argument(4,inratioch)
 !      call get_command_argument(5,diagtype)
 !      call get_command_argument(6,fixedqch)
-         print*,'equib started'
+!         print*,'equib started'
+allocate(ITRANA(2,NDIM2))
+allocate(ITRANB(2,NDIM2))
+allocate(ITRANC(2,NDIM2))
+allocate(G(NDIM2))
+allocate(N2(NDIM2))
+allocate(N(NDIM2))
+allocate(TDRAT(2,MAXND))
+allocate(TNIJ(NDIM2,NDIM2)) 
+allocate(FINTIJ(NDIM2,NDIM2))
+     allocate(WAVA(NDIM2))
+allocate(WAVB(NDIM2))
+allocate(WAVC(NDIM2)) 
+allocate(CS(NDIM2,NDIM2))
+allocate(QEFF(NDIM2,NDIM2))
+allocate(QQ(NDIM1))
+allocate(Q(NDIM1,NDIM2,NDIM2))
+allocate(QOM(NDIM1,NDIM2,NDIM2)) 
+allocate(A(NDIM2,NDIM2))
+allocate(E(NDIM2))
+allocate(T(NDIM1))
+allocate(ROOTT(NDIM1)) 
+allocate(X(NDIM2,NDIM2)) 
+allocate(Y(NDIM2))
+allocate(X2(NDIM2,NDIM2)) 
+allocate(XKEEP(NDIM2,NDIM2)) 
+allocate(Y2(NDIM2)) 
+allocate(YKEEP(NDIM2))
+allocate(HMH(NDIM1,NDIM1))
+allocate(D(NDIM1))
+      allocate(label(ndim2))
+
       if (diagtype .ne. "t" .and. diagtype .ne. "T" .and. &
           & diagtype .ne. "d" .and. diagtype .ne. "D") then
          print *,"Diagnostic type must be either T or D"
@@ -120,13 +153,14 @@
 !      WRITE(6,1001)
                                                         !Interrogate for input
       !READ(5,1002) ION
-      IONL = INDEX(ION,' ') - 1
 	  !$omp critical
-	  print*, 'open file'
+      IONL = INDEX(ION,' ') - 1
+
+!	  print*, 'open file'
       OPEN(UNIT=fileunit,STATUS='OLD',                                         &
      & FILE='Atomic-data/'//ION(1:IONL)//'.dat')
 !     + NAME='atomic_data/'//ION(1:IONL)//'.dat')
-         print*,'begin reading'
+!         print*,'begin reading'
                                                       !Read in no. comment lines
       read(fileunit,*) NLINES
       DO I = 1, NLINES
@@ -203,7 +237,7 @@
         E(I) = EX
       ENDDO
       CLOSE (UNIT=fileunit)
-	  print*,'close file'
+!	  print*,'close file'
 	  !$omp end critical
                                 !Get levels for ratio
 !      WRITE(6,1010)
@@ -569,6 +603,37 @@
 !      else
 !        print *,"  Temperature (K)             Density (cm-3) - assumed"
 !      endif
+
+       deallocate(ITRANA)
+deallocate(ITRANB)
+deallocate(ITRANC)
+deallocate(G)
+deallocate(N2)
+deallocate(N)
+deallocate(TDRAT)
+deallocate(TNIJ) 
+deallocate(FINTIJ)
+     deallocate(WAVA)
+deallocate(WAVB)
+deallocate(WAVC) 
+deallocate(CS)
+deallocate(QEFF)
+deallocate(QQ)
+deallocate(Q)
+deallocate(QOM) 
+deallocate(A)
+deallocate(E)
+deallocate(T)
+deallocate(ROOTT) 
+deallocate(X) 
+deallocate(Y)
+deallocate(X2) 
+deallocate(XKEEP) 
+deallocate(Y2) 
+deallocate(YKEEP)
+deallocate(HMH)
+deallocate(D)
+      deallocate(label)
 
       if (diagtype .eq. "D" .or. diagtype .eq. "d") then
         result = valtest(2)

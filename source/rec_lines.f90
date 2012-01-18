@@ -224,6 +224,7 @@
      & 1X, A3, 1X, F7.4, 1X, A3, 1X, A7, 3X, F11.4, A1, A1, 1X, I2, &
      &1X, A1, 1X, A9, 1X, F13.4, 1X, A1, A1, 1X, I2, 1X, A1, 1X, A9, 1X,&
      & F7.4, 1X, F7.4, 1X, F7.4)!, 1X, E10.4, 1X, E10.4, 1X)
+!$omp critical
             OPEN(fileunit, file="Atomic-data/Roii.dat", status='old')
             DO i = 1,415
             READ(fileunit,301) oiiRLs(i)%ION, oiiRLs(i)%Wave, oiiRLs(i)%Hyb, &
@@ -235,7 +236,7 @@
      &oiiRLs(i)%Term2, oiiRLs(i)%Br_A, oiiRLs(i)%Br_B, oiiRLs(i)%Br_C 
             END DO 
       CLOSE(fileunit)
-
+!$omp end critical
 ! 4f-3d transitions
 
       a = 0.232
@@ -832,6 +833,7 @@
      & 1X, A3, 1X, F7.4, 1X, A3, 1X, A7, 3X, F11.4, A1, A1, 1X, I2, &
      &1X, A1, 1X, A9, 1X, F13.4, 1X, A1, A1, 1X, I2, 1X, A1, 1X, A9, 1X,&
      & F7.4, 1X, F7.4, 1X, F7.4)!, 1X, E10.4, 1X, E10.4, 1X)
+!$omp critical
             OPEN(fileunit, file="Atomic-data/Rnii.dat", status='old')
             DO i = 1,99
             READ(fileunit,301) niiRLs(i)%ION, niiRLs(i)%Wave, niiRLs(i)%Hyb, &
@@ -843,7 +845,7 @@
      &niiRLs(i)%Term2, niiRLs(i)%Br_LS
             END DO
       CLOSE(fileunit)
-
+!$omp end critical
       te = te/10000
 
       ! 2s2.2p.(2P*).3s - 2s2.2p.(2P*).3p E1 3P* - 3D  M03  transitions 
@@ -1287,7 +1289,7 @@
       em_hb = 10**logem
 
 ! read in NII data
-
+!$omp critical
        301 FORMAT (F7.2, 1X, F6.4, 1X, F7.4, 1X, F7.4, 1X, F7.4, 1X, F7.4) 
        OPEN(fileunit, file="Atomic-data/Rcii.dat", status='old')
        DO i = 1,57
@@ -1295,7 +1297,7 @@
          & ciiRLs(i)%c, ciiRLs(i)%d, ciiRLs(i)%f
        END DO
        CLOSE(fileunit)
-
+!$omp end critical
       te = te/10000
 
 !calcaulte alphas and intensities, write out
@@ -1395,7 +1397,7 @@
       em_hb = 10**logem
 
 ! read in NII data
-
+!$omp critical
        301 FORMAT (F7.2, 1X, F6.3, 1X, F6.3, 1X, F6.3, 1X, F6.3, 1X, F7.4, 1X, F6.3) 
        OPEN(fileunit, file="Atomic-data/Rneii.dat", status='old')
        DO i = 1,38
@@ -1403,7 +1405,7 @@
          & neiiRLs(i)%c, neiiRLs(i)%d, neiiRLs(i)%f, neiiRLs(i)%Br
        END DO
        CLOSE(fileunit)
-
+!$omp end critical
       te = te/10000
 
 !calcaulte alphas and intensities, write out
@@ -1504,7 +1506,7 @@
       em_hb = 10**logem
 
 ! read in NII data
-
+!$omp critical
        301 FORMAT (A3,1X,F7.2, 1X, F5.3, 1X, F6.3, 1X, F5.3, 1X, F5.3, 1X, F5.4)
        OPEN(fileunit, file="Atomic-data/Rxiii.dat", status='old')
        DO i = 1,6
@@ -1512,7 +1514,7 @@
          & xiiiRLs(i)%b, xiiiRLs(i)%c, xiiiRLs(i)%d, xiiiRLs(i)%Br
        END DO
        CLOSE(fileunit)
-
+!$omp end critical
       te = te/90000 !ionic charge=3 so divide by 9
 
 !calcaulte alphas and intensities, write out
