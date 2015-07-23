@@ -211,20 +211,22 @@ implicit none
 
 ! O II
 
-
         if(ILs(get_ion("oii7319b    ",ILs, Iint))%int_dered > 0) then
 
                 ion_no1 = get_ion("oii7319b    ",ILs, Iint)
                 ion_no2 = get_ion("oii7330b    ",ILs, Iint)
                 ion_no3 = get_ion("oii3726    ",ILs, Iint)
                 ion_no4 = get_ion("oii3729    ",ILs, Iint)
-
-
+                ion_no5 = get_ion("oii3728b   ",ILs, Iint)
 
                 if (ILs(ion_no1)%int_dered .gt. 0 .and. ILs(ion_no2)%int_dered .gt. 0 .and. ILs(ion_no3)%int_dered .gt. 0 .and. ILs(ion_no4)%int_dered .gt. 0) then
-                        oiiTratio = (ILs(ion_no1)%int_dered+ILs(ion_no2)%int_dered)/(ILs(ion_no3)%int_dered+ILs(ion_no4)%int_dered)
+                   oiiTratio = (ILs(ion_no1)%int_dered+ILs(ion_no2)%int_dered)/(ILs(ion_no3)%int_dered+ILs(ion_no4)%int_dered)
+
+                elseif(ILs(ion_no1)%int_dered .gt. 0 .and. ILs(ion_no2)%int_dered .gt. 0 .and. ILs(ion_no5)%int_dered .gt. 0)then !add condition for 3727 blend
+                   oiiTratio = ((ILs(ion_no1)%int_dered+ILs(ion_no3)%int_dered))/(ILs(ion_no5)%int_dered)
+
                 else
-                        oiiTratio = 0.0
+                   oiiTratio = 0.0
                 endif
 
        elseif(ILs(get_ion("oii7319     ",ILs, Iint))%int_dered > 0)then
@@ -241,20 +243,6 @@ implicit none
                 else
                         oiiTratio = 0.0
                 endif
-        !add condition for 3727 blend
-       elseif(ILs(get_ion("oii3727b    ",ILs, Iint))%int_dered > 0)then
-
-                ion_no1 = get_ion("oii7319b   ",ILs, Iint)
-                ion_no3 = get_ion("oii7330b   ",ILs, Iint)
-                ion_no5 = get_ion("oii3727b   ",ILs, Iint)
-
-                if (ILs(ion_no1)%int_dered .gt. 0 .and. ILs(ion_no3)%int_dered .gt. 0 .and. ILs(ion_no5)%int_dered .gt. 0) then
-                        oiiTratio = ((ILs(ion_no1)%int_dered+ILs(ion_no3)%int_dered))/(ILs(ion_no5)%int_dered)
-                else
-                        oiiTratio = 0.0
-                endif
-
-
        else
                        oiiTratio=0.0
        endif
